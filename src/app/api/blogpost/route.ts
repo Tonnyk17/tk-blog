@@ -1,10 +1,29 @@
 import { NextResponse } from "next/server";
 import {prisma} from "@/lib/prisma";
 
-export async function GET() {
+export async function GET(request: Request) {
+  const {searchParams }= new URL(request.url)
+  const search = searchParams.get('search')
+  
   try {
-    const blogList = await prisma.post.findMany()
+    let filters = {};
+
+    if(search) {
+      filters = {
+          OR: [
+          { title: { contains: search, mode: 'insensitive'} },
+          { author: { contains: search, mode: 'insensitive' } },
+          { content: { contains: search, mode: 'insensitive' } },
+        ]
+      }
+    }
+
+    const blogList = await prisma.post.findMany({
+      where: filters
+    })
+
     return NextResponse.json(blogList)
+
   } catch (error) {
     if(error instanceof Error) {
       return NextResponse.json(
