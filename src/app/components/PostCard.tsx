@@ -2,6 +2,7 @@ import { useRouter } from "next/navigation"
 import { IBlogPost } from "../interfaces/blogPostInterface"
 import { FaEdit, FaTrash } from "react-icons/fa"
 import { MouseEvent, MouseEventHandler } from "react"
+import { formatDate } from "@/lib/formatDate"
 
 interface IProps extends IBlogPost {
   onEdit: () => void
@@ -13,6 +14,8 @@ export const PostCard = ({
     author, 
     content, 
     id, 
+    createdAt,
+    updatedAt,
     onEdit, 
     onDelete 
   }: IProps) => {
@@ -46,8 +49,8 @@ export const PostCard = ({
       <p className="w-full text-base">{textSliced}</p>
       <div className="w-full flex flex-col gap-1">
         <span className="text-sm font-light text-gray-300">{author}</span>
-        <span className="text-xs font-light text-gray-300">Creado: 20/11/2024</span>
-        <span className="text-xs font-light text-gray-300">Editado: 20/11/2024</span>
+        <span className="text-xs font-light text-gray-300">Creado: {createdAt ? formatDate(createdAt) : 'Desconocida'}</span>
+        {updatedAt && <span className="text-xs font-light text-gray-300">Editado: {formatDate(updatedAt)}</span> }
       </div>
       
     </div>  

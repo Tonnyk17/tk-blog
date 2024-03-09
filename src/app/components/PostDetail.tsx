@@ -1,3 +1,4 @@
+import { formatDate } from "@/lib/formatDate"
 import { IBlogPost } from "../interfaces/blogPostInterface"
 
 export const PostDetail = ({ title, author, content, createdAt, updatedAt}: IBlogPost) => {
@@ -13,8 +14,8 @@ export const PostDetail = ({ title, author, content, createdAt, updatedAt}: IBlo
       </div>
       <div className="w-full flex justify-between items-end">
       <div className="flex flex-col gap-2">
-        <span className="text-sm font-light text-gray-300">Fecha de edición: {author}</span>
-        <span className="text-sm font-light text-gray-300">Fecha de publicación: {author}</span> 
+        {updatedAt && <span className="text-sm font-light text-gray-300">Fecha de edición: {formatDate(updatedAt)}</span> }
+        <span className="text-sm font-light text-gray-300">Fecha de publicación: {createdAt ? formatDate(createdAt) : 'Desconocida'}</span>
       </div>
       <span className="text-sm font-light text-gray-300 first-letter:uppercase">{author}</span>
       </div>

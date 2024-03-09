@@ -63,7 +63,10 @@ export const PostForm = ({
   const onEdit = async(data: IBlogPost) => {
     try {
       setIsLoading(true)
-      const response = await api.blogpost.editPost(data, String(blogItem?.id))
+      const response = await api.blogpost.editPost(
+        {...data, updatedAt: new Date()}, 
+        String(blogItem?.id)
+      )
       refetch()
       toast.success('Publicación editada correctamente')
       setOpen(false)
