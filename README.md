@@ -2,6 +2,38 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 ## Getting Started
 
+First, install dependencies:
+```bash
+npm i
+# or
+yarn
+```
+
+connect your database(This is project use PostgreSQL) with the environment variable:
+
+```bash
+  POSTGRES_PRISMA_URL
+```
+Run the following command to generate a migration file:
+```bash
+npx prisma migrate dev
+```
+
+To apply the migration to the database, use the following command:
+```bash
+npx prisma db push
+```
+
+Ensure your application is configured to use the Prisma Client. You can generate it by running the following command:
+```bash
+npx prisma generate
+```
+
+Don't forget write your backend env variable 
+```bash
+NEXT_PUBLIC_HOST_URL= //The URL of your project (localhost:3000)
+```
+
 First, run the development server:
 
 ```bash
