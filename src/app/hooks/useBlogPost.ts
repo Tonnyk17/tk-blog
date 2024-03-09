@@ -12,4 +12,17 @@ export const useBlogPost = (params: string) => {
   })
   
   return {isLoading, isError, data, error, refetch}
+
+}
+
+export const useBlogPostDetail = (id: string) => {
+  const { isLoading, isError, data, error, refetch } = useQuery({
+    queryKey: ['blogpost', id],
+    queryFn: async () => {
+      const data = await api.blogpost.getDetail(id)
+      return data
+    },
+  })
+  
+  return {isLoading, isError, data, error, refetch}
 }
