@@ -1,113 +1,115 @@
-import Image from "next/image";
+'use client'
+
+import { PostCard } from "@/app/components/PostCard";
+import { SearchBar } from "@/app/components/SearchBar";
+import { IconButton } from "@/app/components/IconButton";
+import { useBlogPost } from "@/app/hooks/useBlogPost";
+import { IBlogPost } from "@/app/interfaces/blogPostInterface";
+import { useEffect, useState } from "react";
+import { FaPlus } from "react-icons/fa";
+import { CardSkeleton } from "./components/skeletons/CardSkeleton";
+import { Modal } from "./components/Modal";
+import { PostForm } from "./components/PostForm";
+import api from "@/lib/api";
+import { Toaster, toast } from "sonner";
 
 export default function Home() {
+  const [isOnline, setIsOnline] = useState(true);
+  const [filters, setFilters] = useState('')
+  const [selected, setSelected] = useState<IBlogPost | null>(null)
+  const [open, setOpen] = useState(false) 
+  const { data, isLoading, refetch } = useBlogPost(filters);
+
+  const handleEdit = (item: IBlogPost) => {
+    if(!isOnline){
+      toast.error("No es posible hacer cambios hasta que se reestablezca la conexión a la Red")
+      return
+    }
+    setSelected(item)
+    setOpen(true)
+  }
+
+  const handleDelete = async(id: string) => {
+    try {
+      if(!isOnline) throw new Error("No es posible hacer cambios hasta que se reestablezca la conexión a la Red")
+      
+      const response = await api.blogpost.deletePost(id)
+      toast.success('Publicación eliminada')
+      refetch()
+
+    } catch (error) {
+      if(error instanceof Error) {
+        toast.error(error?.message)
+      }
+    }
+  } 
+
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      toast.success("Se ha reestablecido la conexión con la Red")
+      refetch();
+    };
+
+    const handleOffline = () => {
+      setIsOnline(false);
+      toast.error("Se ha perdido la conexión con la Red")
+    };
+
+    if (typeof window !== 'undefined') {
+      setIsOnline(navigator.onLine);
+
+      window.addEventListener('online', handleOnline);
+      window.addEventListener('offline', handleOffline);
+
+      return () => {
+        window.removeEventListener('online', handleOnline);
+        window.removeEventListener('offline', handleOffline);
+      };
+    }
+  }, [refetch]);
+
+  const handleOpenForm = () => {
+    setOpen(true)
+    setSelected(null)
+  }
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
+    <main className="flex min-h-screen flex-col items-center gap-20 py-10">
+      <div className="w-full flex justify-center items-center gap-4">
+        <SearchBar setFilters={setFilters} />
+        {isOnline &&
+          <IconButton onClick={handleOpenForm}>
+            <FaPlus/>
+          </IconButton>
+        }
       </div>
-
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-full sm:before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full sm:after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
+      <div className="w-3/4 max-md:w-full flex justify-center flex-wrap gap-10">
+        {
+          !isLoading && data ?
+            data?.data?.map((item:IBlogPost, i: number) => <div key={i}>
+                <PostCard 
+                  {...item} 
+                  onEdit={() => handleEdit(item)}
+                  onDelete={() => handleDelete(item.id || '')}
+                />
+              </div>
+            )
+          :
+            Array.from({ length: 3 }, (_, index) => <CardSkeleton key={index} />)
+        }
+      </div>
+      <Modal
+        open={open}
+        setOpen={setOpen}
+      >
+        <PostForm
+          setOpen={setOpen}
+          refetch={refetch}
+          blogItem={selected}
         />
-      </div>
-
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50 text-balance`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
+      </Modal>
+      <Toaster richColors position="top-right"/>
     </main>
   );
 }
