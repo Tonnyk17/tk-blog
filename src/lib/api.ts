@@ -16,6 +16,9 @@ export default {
     },
     deletePost(id: string){
       return axios.delete(`${HOST_URL}/blogpost/${id}`)
+    },
+    editPost(data: IBlogPost, id: string){
+      return axios.put(`${HOST_URL}/blogpost/${id}`, data)
     }
   }
 }

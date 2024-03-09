@@ -14,7 +14,7 @@ import api from "@/lib/api";
 import { Toaster, toast } from "sonner";
 
 export default function Home() {
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [isOnline, setIsOnline] = useState(true);
   const [filters, setFilters] = useState('')
   const [selected, setSelected] = useState<IBlogPost | null>(null)
   const [open, setOpen] = useState(false) 
@@ -56,23 +56,30 @@ export default function Home() {
       toast.error("Se ha perdido la conexión con la Red")
     };
 
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
+    if (typeof window !== 'undefined') {
+      setIsOnline(navigator.onLine);
 
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
+      window.addEventListener('online', handleOnline);
+      window.addEventListener('offline', handleOffline);
+
+      return () => {
+        window.removeEventListener('online', handleOnline);
+        window.removeEventListener('offline', handleOffline);
+      };
+    }
   }, [refetch]);
 
-  console.log(isOnline)
+  const handleOpenForm = () => {
+    setOpen(true)
+    setSelected(null)
+  }
 
   return (
     <main className="flex min-h-screen flex-col items-center gap-20 py-10">
       <div className="w-full flex justify-center items-center gap-4">
         <SearchBar setFilters={setFilters} />
         {isOnline &&
-          <IconButton onClick={() => setOpen(true)}>
+          <IconButton onClick={handleOpenForm}>
             <FaPlus/>
           </IconButton>
         }
@@ -98,10 +105,8 @@ export default function Home() {
       >
         <PostForm
           setOpen={setOpen}
-          title={selected?.title}
-          author={selected?.author}
-          content={selected?.content}
-          id={selected?.id}
+          refetch={refetch}
+          blogItem={selected}
         />
       </Modal>
       <Toaster richColors position="top-right"/>
