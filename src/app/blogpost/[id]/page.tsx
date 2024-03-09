@@ -2,6 +2,7 @@
 
 import { IconButton } from "@/app/components/IconButton";
 import { PostDetail } from "@/app/components/PostDetail";
+import { PostDetailSkeleton } from "@/app/components/skeletons/PostDetailSkeleton";
 import { useBlogPostDetail } from "@/app/hooks/useBlogPost";
 import { useParams, useRouter } from "next/navigation";
 import { FaHome } from "react-icons/fa";
@@ -16,7 +17,11 @@ export default function BlogPostDetail() {
       <IconButton onClick={() => router.push('/')}>
         <FaHome className="w-6 h-6"/>
       </IconButton>
-      <PostDetail {...data?.data}/>
+      {!isLoading ?
+          <PostDetail {...data?.data}/>
+        :
+          <PostDetailSkeleton/>
+      }
     </main>
   );
 }
