@@ -8,6 +8,8 @@ import { IBlogPost } from "@/app/interfaces/blogPostInterface";
 import { useState } from "react";
 import { FaPlus } from "react-icons/fa";
 import { CardSkeleton } from "./components/skeletons/CardSkeleton";
+import { Modal } from "./components/Modal";
+import { PostForm } from "./components/PostForm";
 
 export default function Home() {
   const [filters, setFilters] = useState('')
@@ -31,6 +33,9 @@ export default function Home() {
             Array.from({ length: 3 }, (_, index) => <CardSkeleton key={index} />)
         }
       </div>
+      <Modal>
+        <PostForm/>
+      </Modal>
     </main>
   );
 }

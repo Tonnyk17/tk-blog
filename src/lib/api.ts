@@ -1,7 +1,7 @@
 import axios from 'axios'
+import { IBlogPost } from '@/app/interfaces/blogPostInterface'
 
 const HOST_URL = `${process.env.NEXT_PUBLIC_HOST_URL}/api`
-
 
 export default {
   blogpost : {
@@ -10,6 +10,9 @@ export default {
     },
     getDetail(id: string){
       return axios.get(`${HOST_URL}/blogpost/${id}`)
+    },
+    createPost(data: IBlogPost){
+      return axios.post(`${HOST_URL}/blogpost`, data)
     }
   }
 }
