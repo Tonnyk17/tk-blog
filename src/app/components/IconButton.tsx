@@ -1,13 +1,19 @@
 'use client'
 
-import { FaPlus } from "react-icons/fa"
+import { ReactNode } from "react"
 
-export const IconButton = () => {
+type PropTypes = {
+  children: ReactNode,
+  onClick: () => void
+}
+
+export const IconButton = ({ children, onClick }: PropTypes) => {
   return <>
     <button 
-      className=" bg-gray-900 rounded-full w-10 h-10 flex justify-center items-center border-none"
+      onClick={onClick}
+      className="bg-gray-900 rounded-full max-md:w-12 max-md:h-12 w-14 h-14 flex justify-center items-center border-none"
     >
-      <FaPlus/>
+      {children}
     </button>
   </>
 }
